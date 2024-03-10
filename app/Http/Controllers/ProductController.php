@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Models\OrderDetails;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Stripe;
 
+
+
 class ProductController extends Controller
 {
-    /**
-     * Write code on Method
-     *
-     * @return response()
-     */
     public function index()
     {
         $products = Product::all();
@@ -70,7 +69,6 @@ class ProductController extends Controller
             session()->flash('success', 'Cart updated successfully');
         }
     }
-  
     /**
      * Write code on Method
      *
@@ -87,25 +85,51 @@ class ProductController extends Controller
             session()->flash('success', 'Product removed successfully');
         }
     }
-
-    public function checkout()
-    {
+    public function checkout(){
         return view('checkout');
     }
-
     public function order(Request $request): RedirectResponse
-    {
-        // dd($request);
-        Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+    {  
+        if(session('cart')){
+            $carts = session('cart'); 
+            $total = 0;
+            $customerID = 1;
+            foreach($carts as $id=>$details){
+                echo $id . '<br>';
+                $total += $details['price'] * $details['quantity'];
+            }
+        }
+       $order_data = [
+            'totalamount' => $total,
+            'customer_id' => $customerID,
+            'coupon_discount' => 0,
+            'payment_method' => 'stripe'
+       ];
+       $order_id = Order::insertGetId($order_data);
+       //echo $order_id;
+        foreach($carts as $id=>$details){
+        $order_details_data = [
+            'order_id' => $order_id,
+            'product_id' => $id,
+            'product_qty' => $details['quantity'],
+            'product_price' => $details['price'],
+            'product_subtotal' => $details['quantity'] * $details['price'],
+            'product_discount' => 0,     
+       ];
+       OrderDetails::insert($order_details_data);
+    }   
+       //dd($carts);     
+       
+       Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
       
         Stripe\Charge::create ([
-                "amount" => 50 * 100,
+                "amount" => $total,
                 "currency" => "usd",
                 "source" => $request->stripeToken,
-                "description" => "Test payment from TCLK" 
+                "description" => "Test payment from TCLK." 
         ]);
                 
-        return back()
-                ->with('success', 'Payment successful!');
+        return redirect('products')
+                ->with('success', 'Order successful!');
     }
 }
