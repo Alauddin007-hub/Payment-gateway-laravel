@@ -121,6 +121,7 @@ class ProductController extends Controller
 
             //    session_destroy(session('cart'));
             session()->forget('cart');
+            
         }
         //dd($carts);     
 
