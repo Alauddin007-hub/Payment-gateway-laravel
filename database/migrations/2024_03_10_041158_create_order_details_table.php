@@ -19,7 +19,8 @@ return new class extends Migration
             $table->float('product_price');
             $table->float('product_subtotal');
             $table->float('product_discount');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent(); 
         });
     }
 

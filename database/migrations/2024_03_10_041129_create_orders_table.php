@@ -18,7 +18,8 @@ return new class extends Migration
             $table->integer('coupon_discount');
             $table->string('status')->default("Pending");
             $table->string('payment_method');
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent(); 
         });
     }
 

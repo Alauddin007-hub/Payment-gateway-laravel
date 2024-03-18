@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string("image", 255)->nullable();
             $table->integer("quantity");
             $table->decimal("price", 6, 2);
-            $table->timestamps();
+            $table->timestamp('created_at')->useCurrent();
+            $table->timestamp('updated_at')->useCurrent(); 
         });
     }
 
